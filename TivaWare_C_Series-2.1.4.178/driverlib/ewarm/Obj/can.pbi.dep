@@ -1,0 +1,18 @@
+can.pbi: \
+  C:\Users\yuri_\Desktop\Sistemas\ Embarcados\lab3_sistemas_embarcados\TivaWare_C_Series-2.1.4.178\driverlib\can.c \
+  D:\Program\ Files\ (x86)\IAR\ Systems\Embedded\ Workbench\ 8.3\arm\inc\c\stdbool.h \
+  D:\Program\ Files\ (x86)\IAR\ Systems\Embedded\ Workbench\ 8.3\arm\inc\c\stdint.h \
+  D:\Program\ Files\ (x86)\IAR\ Systems\Embedded\ Workbench\ 8.3\arm\inc\c\ycheck.h \
+  D:\Program\ Files\ (x86)\IAR\ Systems\Embedded\ Workbench\ 8.3\arm\inc\c\yvals.h \
+  D:\Program\ Files\ (x86)\IAR\ Systems\Embedded\ Workbench\ 8.3\arm\inc\c\DLib_Defaults.h \
+  D:\\Program\ Files\ (x86)\\IAR\ Systems\\Embedded\ Workbench\ 8.3\\arm\\inc\\c\\DLib_Config_Normal.h \
+  D:\Program\ Files\ (x86)\IAR\ Systems\Embedded\ Workbench\ 8.3\arm\inc\c\DLib_Product.h \
+  C:\Users\yuri_\Desktop\Sistemas\ Embarcados\lab3_sistemas_embarcados\TivaWare_C_Series-2.1.4.178\driverlib\..\inc/hw_can.h \
+  C:\Users\yuri_\Desktop\Sistemas\ Embarcados\lab3_sistemas_embarcados\TivaWare_C_Series-2.1.4.178\driverlib\..\inc/hw_ints.h \
+  C:\Users\yuri_\Desktop\Sistemas\ Embarcados\lab3_sistemas_embarcados\TivaWare_C_Series-2.1.4.178\driverlib\..\inc/hw_nvic.h \
+  C:\Users\yuri_\Desktop\Sistemas\ Embarcados\lab3_sistemas_embarcados\TivaWare_C_Series-2.1.4.178\driverlib\..\inc/hw_memmap.h \
+  C:\Users\yuri_\Desktop\Sistemas\ Embarcados\lab3_sistemas_embarcados\TivaWare_C_Series-2.1.4.178\driverlib\..\inc/hw_sysctl.h \
+  C:\Users\yuri_\Desktop\Sistemas\ Embarcados\lab3_sistemas_embarcados\TivaWare_C_Series-2.1.4.178\driverlib\..\inc/hw_types.h \
+  C:\Users\yuri_\Desktop\Sistemas\ Embarcados\lab3_sistemas_embarcados\TivaWare_C_Series-2.1.4.178\driverlib\..\driverlib/can.h \
+  C:\Users\yuri_\Desktop\Sistemas\ Embarcados\lab3_sistemas_embarcados\TivaWare_C_Series-2.1.4.178\driverlib\..\driverlib/debug.h \
+  C:\Users\yuri_\Desktop\Sistemas\ Embarcados\lab3_sistemas_embarcados\TivaWare_C_Series-2.1.4.178\driverlib\..\driverlib/interrupt.h

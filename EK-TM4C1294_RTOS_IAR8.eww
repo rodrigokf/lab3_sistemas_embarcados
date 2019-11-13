@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<workspace>
+    <project>
+        <path>$WS_DIR$\TivaWare_C_Series-2.1.4.178\driverlib\driverlib.ewp</path>
+    </project>
+    <project>
+        <path>$WS_DIR$\TivaWare_C_Series-2.1.4.178\grlib\grlib.ewp</path>
+    </project>
+    <project>
+        <path>$WS_DIR$\Projects\Lab3_MotorCC\Lab3_MotorCC.ewp</path>
+    </project>
+    <project>
+        <path>$WS_DIR$\CMSIS-5.6.0\CMSIS\RTOS2\RTX\Library\IAR\IDE\RTX_CM.ewp</path>
+    </project>
+    <batchBuild />
+</workspace>

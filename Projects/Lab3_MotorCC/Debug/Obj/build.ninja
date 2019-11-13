@@ -1,0 +1,36 @@
+#Generating source browse information for project Lab3_MotorCC
+
+
+#Abbreviations
+cc = D$:\Program$ Files$ (x86)\IAR$ Systems\Embedded$ Workbench$ 8.3\common\bin\SourceIndexer.exe
+ll = D$:\Program$ Files$ (x86)\IAR$ Systems\Embedded$ Workbench$ 8.3\common\bin\PbdLink.exe
+bd = D$:\Program$ Files$ (x86)\IAR$ Systems\Embedded$ Workbench$ 8.3\common\bin\makeBrowseData.exe
+
+
+
+#Rules
+rule index
+  depfile = $out.dep
+  command = $cc -out=$out -f $in
+rule link
+  command = $ll -M $out $in
+rule browsedata
+  command = $bd $in -output  $out
+
+
+
+#Build steps
+build driverleds.pbi : index driverleds.xcl
+build main.pbi : index main.xcl
+build PWM_funcs.pbi : index PWM_funcs.xcl
+build RTX_Config.pbi : index RTX_Config.xcl
+build rtx_lib.pbi : index rtx_lib.xcl
+build system_TM4C1294_TW.pbi : index system_TM4C1294_TW.xcl
+build UART_funcs.pbi : index UART_funcs.xcl
+build Lab3_MotorCC_part0.pbi : link driverleds.pbi main.pbi PWM_funcs.pbi
+build Lab3_MotorCC_part1.pbi : link RTX_Config.pbi rtx_lib.pbi system_TM4C1294_TW.pbi
+build Lab3_MotorCC_part2.pbi : link UART_funcs.pbi
+build Lab3_MotorCC.pbd : link Lab3_MotorCC_part0.pbi Lab3_MotorCC_part1.pbi Lab3_MotorCC_part2.pbi
+build Lab3_MotorCC.pbw : browsedata Lab3_MotorCC.pbd
+
+
