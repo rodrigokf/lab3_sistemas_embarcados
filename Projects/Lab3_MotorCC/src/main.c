@@ -24,9 +24,11 @@
 
 #define MSGQUEUE_OBJECTS      5 //quantidade de mensagens na fila
 
-osThreadId_t UART_thread_id, PWM_thread_id;
+osThreadId_t UART_thread_id, PWM_thread_id, QEI_thread_id, VIS_thread_id;
 
 osMessageQueueId_t Set_Point_msg;  
+osMessageQueueId_t RPM_msg;  
+
 
 void UART_thread(void *arg)
 {
@@ -70,29 +72,54 @@ void PWM_thread(void *arg)
   } 
 }
 
-uint32_t qeiVelocidade = 0;
+void QEI_thread(void *arg)
+{
+  uint32_t RPS;
+  uint32_t RPM;
+  while(1) 
+  {  
+      RPS = (uint32_t)QEIVelocityGet(QEI0_BASE)/18;
+      RPM = (uint32_t)60*RPS;
+      osMessageQueuePut(RPM_msg, &RPM, 0, NULL);
+  } 
+}
+
+void VIS_thread(void *arg)
+{
+  uint32_t dado;
+  osStatus_t status;
+  while(1) 
+  {  
+    status = osMessageQueueGet(RPM_msg, &dado, NULL, osWaitForever);  // wait for message
+    if (status == osOK) {
+      
+        dado++;
+    }
+  } 
+}
 
 void main(void){
   SystemInit();
-//  UART_init();
-//  PWM_init();
+  UART_init();
+  PWM_init();
   QEI_init();
 
-//  osKernelInitialize();
-//  
-//  UART_thread_id = osThreadNew(UART_thread, NULL, NULL);
-//  PWM_thread_id = osThreadNew(PWM_thread, NULL, NULL);
-//  
-//  Set_Point_msg = osMessageQueueNew(MSGQUEUE_OBJECTS, sizeof(uint32_t), NULL);
-//
-//  if(osKernelGetState() == osKernelReady)
-//    osKernelStart();
-
-
+  osKernelInitialize();
   
+  UART_thread_id = osThreadNew(UART_thread, NULL, NULL);
+  PWM_thread_id = osThreadNew(PWM_thread, NULL, NULL);
+  QEI_thread_id = osThreadNew(QEI_thread, NULL, NULL);
+  VIS_thread_id = osThreadNew(VIS_thread, NULL, NULL);
+  
+  Set_Point_msg = osMessageQueueNew(MSGQUEUE_OBJECTS, sizeof(uint32_t), NULL);
+  RPM_msg = osMessageQueueNew(MSGQUEUE_OBJECTS, sizeof(uint32_t), NULL);
+
+  if(osKernelGetState() == osKernelReady)
+    osKernelStart();
+
   while(1)
   {
-      qeiVelocidade = (uint32_t)QEIVelocityGet(QEI0_BASE)/18;
-      SysCtlDelay (10000);
+      //qeiVelocidade = (uint32_t)QEIVelocityGet(QEI0_BASE)/18;
+      //SysCtlDelay (10000);
   }
 } // main
