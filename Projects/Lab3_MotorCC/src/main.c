@@ -11,14 +11,16 @@
 *
 *******************************************************************************/
 
-
+#include <stdint.h>
 #include "system_tm4c1294.h" // CMSIS-Core
 #include "driverleds.h" // device drivers
 #include "cmsis_os2.h" // CMSIS-RTOS
 #include "UART_funcs.h"  //UART functions
 #include "PWM_funcs.h"  //PWM functions 
-#include "driverlib/fpu.h"
-#include <stdlib.h>
+#include "QEI_funcs.h"  //QEI functions 
+#include "inc/hw_memmap.h"
+#include "driverlib/sysctl.h"
+
 
 #define MSGQUEUE_OBJECTS      5 //quantidade de mensagens na fila
 
@@ -67,21 +69,30 @@ void PWM_thread(void *arg)
     }
   } 
 }
-  
+
+uint32_t qeiVelocidade = 0;
+
 void main(void){
   SystemInit();
-  UART_init();
-  PWM_init();
+//  UART_init();
+//  PWM_init();
+  QEI_init();
 
-  osKernelInitialize();
+//  osKernelInitialize();
+//  
+//  UART_thread_id = osThreadNew(UART_thread, NULL, NULL);
+//  PWM_thread_id = osThreadNew(PWM_thread, NULL, NULL);
+//  
+//  Set_Point_msg = osMessageQueueNew(MSGQUEUE_OBJECTS, sizeof(uint32_t), NULL);
+//
+//  if(osKernelGetState() == osKernelReady)
+//    osKernelStart();
+
+
   
-  UART_thread_id = osThreadNew(UART_thread, NULL, NULL);
-  PWM_thread_id = osThreadNew(PWM_thread, NULL, NULL);
-  
-  Set_Point_msg = osMessageQueueNew(MSGQUEUE_OBJECTS, sizeof(uint32_t), NULL);
-
-  if(osKernelGetState() == osKernelReady)
-    osKernelStart();
-
-  while(1);
+  while(1)
+  {
+      qeiVelocidade = (uint32_t)QEIVelocityGet(QEI0_BASE)/18;
+      SysCtlDelay (10000);
+  }
 } // main
