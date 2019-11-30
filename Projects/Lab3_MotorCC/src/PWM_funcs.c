@@ -8,7 +8,14 @@
 #include "PWM_funcs.h"
 
 void PWM_init()
-{    //
+{
+  //Set GPIO IN3(PB2) e IN4(PB3)
+  
+  SysCtlPeripheralEnable(SYSCTL_PERIPH_GPION);
+  while(!SysCtlPeripheralReady(SYSCTL_PERIPH_GPION));
+  GPIOPinTypeGPIOOutput(GPIO_PORTN_BASE, GPIO_PIN_2 | GPIO_PIN_3);
+  
+    //
     // Set the PWM clock to the system clock.
     //
     SysCtlPWMClockSet(SYSCTL_PWMDIV_1);
@@ -81,8 +88,9 @@ void PWM_init()
   
 }
 
-void PWM_set_duty(float duty)
+void PWM_set_duty(uint16_t duty)
 {
+  
   PWMPulseWidthSet(PWM0_BASE, PWM_OUT_2,
-                     (uint32_t)(PWMGenPeriodGet(PWM0_BASE, PWM_GEN_1)*duty));
+                     (uint32_t)(PWMGenPeriodGet(PWM0_BASE, PWM_GEN_1)*(float)duty/100));
 }
