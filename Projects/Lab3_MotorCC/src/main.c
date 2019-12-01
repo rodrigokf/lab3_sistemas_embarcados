@@ -22,6 +22,9 @@
 #include "inc/hw_memmap.h"
 #include "driverlib/sysctl.h"
 
+#define kp  0.1
+#define ki  0.03
+#define kd  0
 
 #define MSGQUEUE_OBJECTS      5 //quantidade de mensagens na fila
 
@@ -40,14 +43,13 @@ osMessageQueueId_t DutyCycle_msg;
 
 void UART_thread(void *arg)
 {
-  uint8_t str[12] = "LeituraReal:";
-  uint8_t str2[2] = "\r\n";
   osStatus_t status;
   uint32_t RPM_to_send;
   uint8_t c = 0;
   uint32_t divisor;
 
   dados_motor set_point;
+  uint32_t set_point_anterior;
   uint8_t RPM_ASCII[5];
   uint16_t cont = 1;
   uint32_t intermediaryDigit = 0;
@@ -68,11 +70,15 @@ void UART_thread(void *arg)
           cont *= 10;
         }
         else
+        {
+          set_point.RPM = set_point_anterior;
           set_point.sentido = intermediaryDigit;
+        }
       }
       else                                                      
       {
         osMessageQueuePut(SetPoint_msg, &set_point, 0, NULL);
+        set_point_anterior = set_point.RPM;
         set_point.RPM = 0;
         cont = 1;
       }  
@@ -92,16 +98,16 @@ void UART_thread(void *arg)
         {
           RPM_ASCII[c] += 0x30;
         }
-        //UART_send_byte(str, 12);
+        UART_send_byte("LeituraReal: ", 13);
         UART_send_byte(RPM_ASCII, 5);
-        UART_send_byte(str2,2);
+        UART_send_byte("\n\r",2);
     }
   }
 }
 
 void PWM_thread(void *arg)
 {
-  uint16_t duty_cycle;
+  uint32_t duty_cycle;
   osStatus_t status;
   while(1) {
     status = osMessageQueueGet(DutyCycle_msg, &duty_cycle, NULL, 1000);  // wait for message
@@ -129,37 +135,66 @@ void QEI_thread(void *arg)
 }
 
 void Control_thread(void *arg)
-{
+{  
   dados_motor parametros;
   osStatus_t status;
   uint32_t RPM;
   uint32_t contador = 0;
+  uint8_t sentido_anterior;
+
+  float pv_speed = 0;
+  float set_speed = 0;
+  float e_speed = 0; //error of speed = set_speed - pv_speed
+  float e_speed_pre = 0;  //last error of speed
+  float e_speed_sum = 0;  //sum error of speed
+  float pwm_pulse = 0;     //this value is 0~255
+  
   while(1) 
   {  
     //Ler Setpoint
-    status = osMessageQueueGet(SetPoint_msg, &parametros, NULL, 1000);  // wait for message
+    status = osMessageQueueGet(SetPoint_msg, &parametros, NULL, 500);  // wait for message
     if (status == osOK) 
     {
-      if(parametros.sentido == 'A')
+      if(parametros.sentido == 'A' && sentido_anterior == 'H')
       {
         GPIOPinWrite(GPIO_PORTN_BASE, GPIO_PIN_2, GPIO_PIN_2);    //freio
         GPIOPinWrite(GPIO_PORTN_BASE, GPIO_PIN_3, GPIO_PIN_3);     
-        osDelay(1000);     
+        osDelay(500);     
         GPIOPinWrite(GPIO_PORTN_BASE, GPIO_PIN_2, GPIO_PIN_2);    //gira
         GPIOPinWrite(GPIO_PORTN_BASE, GPIO_PIN_3, 0);
+        
+        sentido_anterior = 'A';
       }
-      else if (parametros.sentido == 'H')
+      else if (parametros.sentido == 'H' && sentido_anterior == 'A')
       {
         GPIOPinWrite(GPIO_PORTN_BASE, GPIO_PIN_2, GPIO_PIN_2);    //freio
         GPIOPinWrite(GPIO_PORTN_BASE, GPIO_PIN_3, GPIO_PIN_3);     
-        osDelay(1000); 
+        osDelay(500); 
         GPIOPinWrite(GPIO_PORTN_BASE, GPIO_PIN_3, GPIO_PIN_3);
         GPIOPinWrite(GPIO_PORTN_BASE, GPIO_PIN_2, 0);
+        sentido_anterior = 'H';
       }
       
     //Escrever Duty
     //TODO: falta transformar parametros.RPM em Duty
-    osMessageQueuePut(DutyCycle_msg, &parametros.RPM, 0, NULL);
+    set_speed = parametros.RPM;
+      
+    e_speed = set_speed - pv_speed;
+    pwm_pulse = (float)e_speed*kp + (float)e_speed_sum*ki + (float)(e_speed - e_speed_pre)*kd;
+    e_speed_pre = e_speed;  //save last (previous) error
+    e_speed_sum += e_speed; //sum of error
+    
+    if (e_speed_sum >10000) 
+      e_speed_sum = 10000;
+    if (e_speed_sum <-10000) 
+      e_speed_sum = -10000;
+    
+    if(pwm_pulse > 1000)
+      pwm_pulse = 1000;
+    if(pwm_pulse < 0)
+      pwm_pulse = 0;
+    
+    osMessageQueuePut(DutyCycle_msg, &pwm_pulse, 0, NULL);
     }
 
     //ler QEI
@@ -196,7 +231,7 @@ void main(void){
   SetPoint_msg = osMessageQueueNew(MSGQUEUE_OBJECTS, sizeof(dados_motor), NULL);
   RPM_msg = osMessageQueueNew(MSGQUEUE_OBJECTS, sizeof(uint32_t), NULL);
   LeituraReal_msg = osMessageQueueNew(MSGQUEUE_OBJECTS, sizeof(uint32_t), NULL);
-  DutyCycle_msg = osMessageQueueNew(MSGQUEUE_OBJECTS, sizeof(uint32_t), NULL);
+  DutyCycle_msg = osMessageQueueNew(MSGQUEUE_OBJECTS, sizeof(float), NULL);
 
   if(osKernelGetState() == osKernelReady)
     osKernelStart();

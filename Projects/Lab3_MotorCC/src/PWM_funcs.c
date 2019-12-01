@@ -92,5 +92,5 @@ void PWM_set_duty(uint16_t duty)
 {
   
   PWMPulseWidthSet(PWM0_BASE, PWM_OUT_2,
-                     (uint32_t)(PWMGenPeriodGet(PWM0_BASE, PWM_GEN_1)*(float)duty/100));
+                     (uint32_t)(PWMGenPeriodGet(PWM0_BASE, PWM_GEN_1)*(float)duty/1000));
 }
