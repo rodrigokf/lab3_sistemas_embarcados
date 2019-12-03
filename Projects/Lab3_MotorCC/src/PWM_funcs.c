@@ -13,7 +13,7 @@ void PWM_init()
   
   SysCtlPeripheralEnable(SYSCTL_PERIPH_GPION);
   while(!SysCtlPeripheralReady(SYSCTL_PERIPH_GPION));
-  GPIOPinTypeGPIOOutput(GPIO_PORTN_BASE, GPIO_PIN_2 | GPIO_PIN_3);
+  GPIOPinTypeGPIOOutput(GPIO_PORTN_BASE, GPIO_PIN_2 | GPIO_PIN_3); // habilita pinos de sentido de rotação
   
     //
     // Set the PWM clock to the system clock.
@@ -68,7 +68,7 @@ void PWM_init()
     // TODO: modify this calculation to use the clock frequency that you are
     // using.
     //
-    PWMGenPeriodSet(PWM0_BASE, PWM_GEN_1, 250000);
+    PWMGenPeriodSet(PWM0_BASE, PWM_GEN_1, 2500000);
 
     //
     // Set PWM0 PD0 to a duty cycle of 25%.  You set the duty cycle as a
@@ -77,7 +77,7 @@ void PWM_init()
     // 25% of the time or 16000 clock cycles (64000 / 4).
     //
     PWMPulseWidthSet(PWM0_BASE, PWM_OUT_2,
-                     (uint32_t)(PWMGenPeriodGet(PWM0_BASE, PWM_GEN_1)*0.5));
+                     (uint32_t)(PWMGenPeriodGet(PWM0_BASE, PWM_GEN_1)*0.1));
 
     //
     // Enables the counter for a PWM generator block.
@@ -88,9 +88,9 @@ void PWM_init()
   
 }
 
-void PWM_set_duty(uint16_t duty)
+void PWM_set_duty(float duty)
 {
   
   PWMPulseWidthSet(PWM0_BASE, PWM_OUT_2,
-                     (uint32_t)(PWMGenPeriodGet(PWM0_BASE, PWM_GEN_1)*(float)duty/1000));
+                     (uint32_t)(PWMGenPeriodGet(PWM0_BASE, PWM_GEN_1)*(duty/100.0)));
 }

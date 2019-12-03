@@ -12,7 +12,7 @@
 
 "--device=TM4C1294NCPDT" 
 
-"--multicore_nr_of_cores=1" 
+"--drv_interface_speed=500" 
 
 
 

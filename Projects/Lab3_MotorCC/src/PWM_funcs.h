@@ -7,6 +7,6 @@
 
 void PWM_init();
 
-void PWM_set_duty(uint16_t duty); //recebe o duty cycle
+void PWM_set_duty(float duty); //recebe o duty cycle
 
 #endif

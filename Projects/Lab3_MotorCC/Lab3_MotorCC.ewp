@@ -337,7 +337,7 @@
                 </option>
                 <option>
                     <name>PreInclude</name>
-                    <state></state>
+                    <state>D:\Program Files (x86)\IAR Systems\Embedded Workbench 8.3\arm\inc\c\stdbool.h</state>
                 </option>
                 <option>
                     <name>CompilerMisraOverride</name>
@@ -2118,6 +2118,9 @@
     </file>
     <file>
         <name>$PROJ_DIR$\src\PWM_funcs.c</name>
+    </file>
+    <file>
+        <name>$PROJ_DIR$\src\QEI_funcs.c</name>
     </file>
     <file>
         <name>$PROJ_DIR$\..\..\CMSIS-5.6.0\CMSIS\RTOS2\RTX\Library\IAR\IDE\CM4F\Exe\RTX_CM.a</name>

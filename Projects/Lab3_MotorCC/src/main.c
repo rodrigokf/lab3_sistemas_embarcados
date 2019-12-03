@@ -22,9 +22,9 @@
 #include "inc/hw_memmap.h"
 #include "driverlib/sysctl.h"
 
-#define kp  0.1
-#define ki  0.03
-#define kd  0
+#define kp  0.01
+#define ki  0.001
+#define kd  0.0
 
 #define MSGQUEUE_OBJECTS      5 //quantidade de mensagens na fila
 
@@ -50,41 +50,59 @@ void UART_thread(void *arg)
 
   dados_motor set_point;
   uint32_t set_point_anterior;
-  uint8_t RPM_ASCII[5];
+  uint8_t RPM_ASCII[6];
+  uint8_t RPM_Setpoint[6] = {"00000"};
   uint16_t cont = 1;
+  uint16_t vector_index = 0;
   uint32_t intermediaryDigit = 0;
+  
+  set_point_anterior = set_point.RPM = 1000;
+  set_point_anterior = set_point.sentido = 'H';
 
   while(1)
   {
     while(UART_char_available())                                
-    {
+    {      
       intermediaryDigit = UART_get_byte();
+        
       if(intermediaryDigit != '\n')                                 
       {
         if( (intermediaryDigit) >= '0' && (intermediaryDigit) <= '9')
         {
+                            
+          if(cont == 1)
+          {
+            set_point.RPM = 0;
+            for(vector_index = 0; vector_index < 6; vector_index++)
+              RPM_Setpoint[vector_index] = 0;
+            
+            vector_index = 0;
+          }
+          
+          RPM_Setpoint[vector_index] = intermediaryDigit;
+          vector_index++;
+          
           intermediaryDigit -= 0x30;
           
           set_point.RPM *= cont;
           set_point.RPM += intermediaryDigit;
-          cont *= 10;
+          cont = 10;
         }
-        else
+        else if( intermediaryDigit == 'A' || intermediaryDigit == 'H')
         {
           set_point.RPM = set_point_anterior;
           set_point.sentido = intermediaryDigit;
         }
       }
       else                                                      
-      {
-        osMessageQueuePut(SetPoint_msg, &set_point, 0, NULL);
+      {  
         set_point_anterior = set_point.RPM;
-        set_point.RPM = 0;
         cont = 1;
       }  
     }
+    osMessageQueuePut(SetPoint_msg, &set_point, 0, NULL);
     
-    status = osMessageQueueGet(LeituraReal_msg , &RPM_to_send, NULL, 1000);  // wait for message
+    status = osMessageQueueGet(LeituraReal_msg , &RPM_to_send, NULL, 100);  // wait for message
     if (status == osOK) {
       
         divisor = 10000;
@@ -98,19 +116,34 @@ void UART_thread(void *arg)
         {
           RPM_ASCII[c] += 0x30;
         }
+        
+        UART_send_byte("SetPoint: ", 10);
+        osDelay(1);
+        UART_send_byte(RPM_Setpoint, vector_index);
+        osDelay(1);
+        UART_send_byte("\r",1);
+        osDelay(1);
+        UART_send_byte("Sentido: ", 9);
+        osDelay(1);
+        UART_send_byte(&set_point.sentido, 1);      
+        osDelay(1);
+        UART_send_byte("\r",1);
+        osDelay(1);
         UART_send_byte("LeituraReal: ", 13);
+        osDelay(1);
         UART_send_byte(RPM_ASCII, 5);
-        UART_send_byte("\n\r",2);
+        osDelay(1);
+        UART_send_byte("\r",1);
     }
   }
 }
 
 void PWM_thread(void *arg)
 {
-  uint32_t duty_cycle;
+  float duty_cycle;
   osStatus_t status;
   while(1) {
-    status = osMessageQueueGet(DutyCycle_msg, &duty_cycle, NULL, 1000);  // wait for message
+    status = osMessageQueueGet(DutyCycle_msg, &duty_cycle, NULL, 1);  // wait for message
     if (status == osOK) {
       
         PWM_set_duty(duty_cycle);
@@ -128,6 +161,7 @@ void QEI_thread(void *arg)
       tick = osKernelGetTickCount();
       RPS = (uint32_t)QEIVelocityGet(QEI0_BASE);
       RPM = (uint32_t)RPS*60/(18*4);
+      //RPM = 9863;
       osMessageQueuePut(RPM_msg, &RPM, 0, NULL);
       
       osDelayUntil(tick + 1000);
@@ -140,19 +174,19 @@ void Control_thread(void *arg)
   osStatus_t status;
   uint32_t RPM;
   uint32_t contador = 0;
-  uint8_t sentido_anterior;
+  uint8_t sentido_anterior = 'H';
 
-  float pv_speed = 0;
-  float set_speed = 0;
-  float e_speed = 0; //error of speed = set_speed - pv_speed
-  float e_speed_pre = 0;  //last error of speed
-  float e_speed_sum = 0;  //sum error of speed
-  float pwm_pulse = 0;     //this value is 0~255
+  int32_t pv_speed = 0;           //process variable
+  int32_t set_speed = 0;          //set point
+  int32_t e_speed = 0;            //error of speed = set_speed - pv_speed
+  int32_t e_speed_pre = 0;        //last error of speed
+  int32_t e_speed_sum = 0;        //sum error of speed
+  float pwm_pulse = 0;          //this value is 0~1000
   
   while(1) 
   {  
     //Ler Setpoint
-    status = osMessageQueueGet(SetPoint_msg, &parametros, NULL, 500);  // wait for message
+    status = osMessageQueueGet(SetPoint_msg, &parametros, NULL, NULL);  // se tiver nova msg, atualiza os valores
     if (status == osOK) 
     {
       if(parametros.sentido == 'A' && sentido_anterior == 'H')
@@ -174,31 +208,10 @@ void Control_thread(void *arg)
         GPIOPinWrite(GPIO_PORTN_BASE, GPIO_PIN_2, 0);
         sentido_anterior = 'H';
       }
-      
-    //Escrever Duty
-    //TODO: falta transformar parametros.RPM em Duty
-    set_speed = parametros.RPM;
-      
-    e_speed = set_speed - pv_speed;
-    pwm_pulse = (float)e_speed*kp + (float)e_speed_sum*ki + (float)(e_speed - e_speed_pre)*kd;
-    e_speed_pre = e_speed;  //save last (previous) error
-    e_speed_sum += e_speed; //sum of error
-    
-    if (e_speed_sum >10000) 
-      e_speed_sum = 10000;
-    if (e_speed_sum <-10000) 
-      e_speed_sum = -10000;
-    
-    if(pwm_pulse > 1000)
-      pwm_pulse = 1000;
-    if(pwm_pulse < 0)
-      pwm_pulse = 0;
-    
-    osMessageQueuePut(DutyCycle_msg, &pwm_pulse, 0, NULL);
     }
-
+    
     //ler QEI
-    status = osMessageQueueGet(RPM_msg, &RPM, NULL, 1000);  // wait for message
+    status = osMessageQueueGet(RPM_msg, &RPM, NULL, 1);  // wait for message
     if (status == osOK) 
     {
       contador++;
@@ -212,6 +225,32 @@ void Control_thread(void *arg)
         //somar constante no RPM
       }
     }
+    
+     //Escrever Duty
+    //TODO: falta transformar parametros.RPM em Duty
+    set_speed = parametros.RPM;
+    pv_speed = RPM;
+      
+    e_speed = set_speed - pv_speed;
+    
+    pwm_pulse = (float)e_speed*kp; 
+    pwm_pulse +=(float)e_speed_sum*ki;
+    pwm_pulse +=(float)(e_speed - e_speed_pre)*kd;
+    
+    e_speed_pre = e_speed;  //save last (previous) error
+    e_speed_sum += e_speed; //sum of error
+    
+//    if (e_speed_sum >100000) 
+//      e_speed_sum = 100000;
+//    if (e_speed_sum <-100000) 
+//      e_speed_sum = -10000;
+    
+    if(pwm_pulse > 99.9)
+      pwm_pulse = 99.9;
+    if(pwm_pulse < 0.0)
+      pwm_pulse = 0.0;
+    
+    osMessageQueuePut(DutyCycle_msg, &pwm_pulse, 0, NULL);
   } 
 }
 

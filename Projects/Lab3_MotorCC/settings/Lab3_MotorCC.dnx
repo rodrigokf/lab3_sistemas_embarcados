@@ -15,6 +15,31 @@
         <Enabled>0</Enabled>
         <ShowSource>1</ShowSource>
     </Trace1>
+    <DebugChecksum>
+        <Checksum>327870587</Checksum>
+    </DebugChecksum>
+    <Disassembly>
+        <InstrCount>0</InstrCount>
+        <MixedMode>1</MixedMode>
+    </Disassembly>
+    <CodeCoverage>
+        <Enabled>0</Enabled>
+        <ShowSource>0</ShowSource>
+        <HideCovered>0</HideCovered>
+    </CodeCoverage>
+    <Exceptions>
+        <StopOnUncaught>_ 0</StopOnUncaught>
+        <StopOnThrow>_ 0</StopOnThrow>
+    </Exceptions>
+    <CallStack>
+        <ShowArgs>0</ShowArgs>
+    </CallStack>
+    <DriverProfiling>
+        <Enabled>0</Enabled>
+        <Mode>1</Mode>
+        <Graph>0</Graph>
+        <Symbiont>0</Symbiont>
+    </DriverProfiling>
     <InterruptLog>
         <LogEnabled>0</LogEnabled>
         <GraphEnabled>0</GraphEnabled>
@@ -30,11 +55,9 @@
         <SumEnabled>0</SumEnabled>
         <ShowTimeSum>1</ShowTimeSum>
     </DataLog>
-    <DisassembleMode>
-        <mode>0</mode>
-    </DisassembleMode>
     <Breakpoints2>
-        <Count>0</Count>
+        <Bp0>_ 1 "STD_CODE2" "{$PROJ_DIR$\src\main.c}.96.7" 0 0 1 "" 0 ""</Bp0>
+        <Count>1</Count>
     </Breakpoints2>
     <Interrupts>
         <Enabled>1</Enabled>
@@ -46,13 +69,38 @@
         <TypeViol>0</TypeViol>
         <Stop>1</Stop>
     </MemConfig>
-    <Aliases>
-        <Count>0</Count>
-        <SuppressDialog>0</SuppressDialog>
-    </Aliases>
     <Simulator>
         <Freq>10000000</Freq>
         <FreqHi>0</FreqHi>
         <MultiCoreRunAll>1</MultiCoreRunAll>
     </Simulator>
+    <LMIFTDIDriver>
+        <LMIFTDIserialNo>0F00B5CF</LMIFTDIserialNo>
+        <LMIFTDIfoundProbes />
+    </LMIFTDIDriver>
+    <TermIOLog>
+        <LoggingEnabled>_ 0</LoggingEnabled>
+        <LogFile>_ ""</LogFile>
+    </TermIOLog>
+    <LogFile>
+        <LoggingEnabled>_ 0</LoggingEnabled>
+        <LogFile>_ ""</LogFile>
+        <Category>_ 0</Category>
+    </LogFile>
+    <CallStackLog>
+        <Enabled>0</Enabled>
+    </CallStackLog>
+    <CallStackStripe>
+        <ShowTiming>1</ShowTiming>
+    </CallStackStripe>
+    <DisassembleMode>
+        <mode>0</mode>
+    </DisassembleMode>
+    <Breakpoints>
+        <Count>0</Count>
+    </Breakpoints>
+    <Aliases>
+        <Count>0</Count>
+        <SuppressDialog>0</SuppressDialog>
+    </Aliases>
 </settings>

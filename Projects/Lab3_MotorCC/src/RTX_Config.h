@@ -44,7 +44,7 @@
 //   <i> Defines the combined global dynamic memory size.
 //   <i> Default: 4096
 #ifndef OS_DYNAMIC_MEM_SIZE
-#define OS_DYNAMIC_MEM_SIZE         4096
+#define OS_DYNAMIC_MEM_SIZE         8192
 #endif
  
 //   <o>Kernel Tick Frequency [Hz] <1-1000000>
@@ -64,7 +64,7 @@
 //     <i> Defines how many ticks a thread will execute before a thread switch.
 //     <i> Default: 5
 #ifndef OS_ROBIN_TIMEOUT
-#define OS_ROBIN_TIMEOUT            5
+#define OS_ROBIN_TIMEOUT            10
 #endif
  
 //   </e>
@@ -115,7 +115,7 @@
 //     <i> Applies to user threads with user-provided stack size and system provided memory for stack.
 //     <i> Default: 0
 #ifndef OS_THREAD_USER_STACK_SIZE
-#define OS_THREAD_USER_STACK_SIZE   0
+#define OS_THREAD_USER_STACK_SIZE   512
 #endif
  
 //   </e>
@@ -124,7 +124,7 @@
 //   <i> Defines stack size for threads with zero stack size specified.
 //   <i> Default: 256
 #ifndef OS_STACK_SIZE
-#define OS_STACK_SIZE               512
+#define OS_STACK_SIZE               1024
 #endif
  
 //   <o>Idle Thread Stack size [bytes] <72-1073741824:8>
