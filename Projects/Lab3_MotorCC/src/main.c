@@ -22,8 +22,8 @@
 #include "inc/hw_memmap.h"
 #include "driverlib/sysctl.h"
 
-#define kp  0.01
-#define ki  0.001
+#define kp  0.7
+#define ki  0.005
 #define kd  0.0
 
 #define MSGQUEUE_OBJECTS      5 //quantidade de mensagens na fila
@@ -56,7 +56,7 @@ void UART_thread(void *arg)
   uint16_t vector_index = 0;
   uint32_t intermediaryDigit = 0;
   
-  set_point_anterior = set_point.RPM = 1000;
+  set_point_anterior = set_point.RPM = 3000;
   set_point_anterior = set_point.sentido = 'H';
 
   while(1)
@@ -134,6 +134,7 @@ void UART_thread(void *arg)
         UART_send_byte(RPM_ASCII, 5);
         osDelay(1);
         UART_send_byte("\r",1);
+        osDelay(500);
     }
   }
 }
@@ -164,7 +165,7 @@ void QEI_thread(void *arg)
       //RPM = 9863;
       osMessageQueuePut(RPM_msg, &RPM, 0, NULL);
       
-      osDelayUntil(tick + 1000);
+      osDelayUntil(tick + 10);
   } 
 }
 
@@ -211,24 +212,24 @@ void Control_thread(void *arg)
     }
     
     //ler QEI
-    status = osMessageQueueGet(RPM_msg, &RPM, NULL, 1);  // wait for message
+    status = osMessageQueueGet(RPM_msg, &RPM, NULL, osWaitForever);  // wait for message
     if (status == osOK) 
     {
-      contador++;
-      //Escrever LeituraReal
+//      contador++;
+//      //Escrever LeituraReal
       osMessageQueuePut(LeituraReal_msg, &RPM, 0, NULL);
-      
-      //Aplica controle
-      if(RPM < parametros.RPM - 300 && contador == 10) //LeituraReal < SetPoint
-      {
-        contador = 0;
-        //somar constante no RPM
-      }
+//      
+//      //Aplica controle
+//      if(RPM < parametros.RPM - 300 && contador == 10) //LeituraReal < SetPoint
+//      {
+//        contador = 0;
+//        //somar constante no RPM
+//      }
     }
     
      //Escrever Duty
     //TODO: falta transformar parametros.RPM em Duty
-    set_speed = parametros.RPM;
+    set_speed = (int32_t)(parametros.RPM * 1.0);
     pv_speed = RPM;
       
     e_speed = set_speed - pv_speed;
@@ -240,16 +241,20 @@ void Control_thread(void *arg)
     e_speed_pre = e_speed;  //save last (previous) error
     e_speed_sum += e_speed; //sum of error
     
-//    if (e_speed_sum >100000) 
-//      e_speed_sum = 100000;
-//    if (e_speed_sum <-100000) 
-//      e_speed_sum = -10000;
+    if (e_speed_sum >1000000) 
+      e_speed_sum = 1000000;
+    if (e_speed_sum <-1000000) 
+      e_speed_sum = -1000000;
+   
     
-    if(pwm_pulse > 99.9)
-      pwm_pulse = 99.9;
+    pwm_pulse /= 100;
+    
+    if(pwm_pulse > 99)
+      pwm_pulse = 99;
     if(pwm_pulse < 0.0)
       pwm_pulse = 0.0;
     
+    //PWM_set_duty(pwm_pulse);
     osMessageQueuePut(DutyCycle_msg, &pwm_pulse, 0, NULL);
   } 
 }

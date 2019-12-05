@@ -115,7 +115,7 @@
 //     <i> Applies to user threads with user-provided stack size and system provided memory for stack.
 //     <i> Default: 0
 #ifndef OS_THREAD_USER_STACK_SIZE
-#define OS_THREAD_USER_STACK_SIZE   512
+#define OS_THREAD_USER_STACK_SIZE   8192
 #endif
  
 //   </e>

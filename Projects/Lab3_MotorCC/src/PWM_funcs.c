@@ -68,7 +68,7 @@ void PWM_init()
     // TODO: modify this calculation to use the clock frequency that you are
     // using.
     //
-    PWMGenPeriodSet(PWM0_BASE, PWM_GEN_1, 2500000);
+    PWMGenPeriodSet(PWM0_BASE, PWM_GEN_1, 250000);
 
     //
     // Set PWM0 PD0 to a duty cycle of 25%.  You set the duty cycle as a
